@@ -42,3 +42,25 @@ npm run preview
 - The backend must be running separately before using the frontend.
 - API calls use `/api/students` and rely on the backend proxy configured in `webpack.dev.cjs`.
 - Production build output is generated to `dist/` with hashed JS/CSS assets and extracted CSS.
+
+## Docker
+
+A production-ready Dockerfile is included. It builds the app and serves the static files with `nginx`.
+
+Build the container:
+
+```bash
+cd student_mgmt_react
+docker build -t student-mgmt-react:latest .
+```
+
+Run the container:
+
+```bash
+docker run -p 80:80 --name student-mgmt-react student-mgmt-react:latest
+```
+
+Notes:
+- The image serves the production build from `/usr/share/nginx/html`.
+- If your backend API is hosted separately, configure a reverse proxy or update the `nginx.conf` to proxy `/api` to your backend host.
+
