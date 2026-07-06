@@ -4,9 +4,10 @@
     "version": "1.0.0",
     "type": "module",
     "scripts": {
-        "dev": "webpack serve --config webpack.config.cjs --mode development",
+        "dev": "webpack serve --config webpack.dev.cjs",
         "start": "npm run dev",
-        "build": "webpack --config webpack.config.cjs --mode production"
+        "build": "webpack --config webpack.prod.cjs",
+        "preview": "serve -s dist"
     },
     "dependencies": {
         "react": "^18.3.1",
@@ -19,9 +20,12 @@
         "babel-loader": "^9.1.2",
         "css-loader": "^6.9.4",
         "html-webpack-plugin": "^5.5.3",
+        "mini-css-extract-plugin": "^3.0.0",
+        "serve": "^14.2.0",
         "style-loader": "^3.4.4",
         "webpack": "^5.88.2",
         "webpack-cli": "^5.1.4",
-        "webpack-dev-server": "^4.16.1"
+        "webpack-dev-server": "^4.16.1",
+        "webpack-merge": "^5.9.0"
     }
 }

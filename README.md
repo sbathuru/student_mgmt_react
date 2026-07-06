@@ -31,7 +31,14 @@ The app will start on `http://localhost:3000` and proxy API requests to the back
 npm run build
 ```
 
+## Preview production build
+
+```bash
+npm run preview
+```
+
 ## Notes
 
 - The backend must be running separately before using the frontend.
-- API calls use `/api/students` and rely on the backend proxy configured in `webpack.config.cjs`.
+- API calls use `/api/students` and rely on the backend proxy configured in `webpack.dev.cjs`.
+- Production build output is generated to `dist/` with hashed JS/CSS assets and extracted CSS.
