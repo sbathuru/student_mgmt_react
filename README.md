@@ -23,7 +23,7 @@ or
 npm run dev
 ```
 
-The app will start on `http://localhost:5173` and proxy API requests to the backend.
+The app will start on `http://localhost:3000` and proxy API requests to the backend.
 
 ## Build
 
