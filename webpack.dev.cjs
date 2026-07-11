@@ -5,20 +5,15 @@ const path = require('path');
 module.exports = merge(common, {
     mode: 'development',
     devtool: 'eval-cheap-module-source-map',
-    module: {
-        rules: [
-            {
-                test: /\.css$/,
-                use: ['style-loader', 'css-loader'],
-            },
-        ],
-    },
     devServer: {
         static: {
             directory: path.resolve(__dirname, 'dist'),
         },
+        headers: {
+            'Cache-Control': 'no-store, no-cache, must-revalidate, private',
+        },
         historyApiFallback: true,
-        port: 3000,
+        port: process.env.PORT || 3000,
         proxy: {
             '/api': {
                 target: 'http://127.0.0.1:5000',

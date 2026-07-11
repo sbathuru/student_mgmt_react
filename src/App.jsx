@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 const emptyForm = {
     id: null,
     name: '',
-    age: '',
+    semester: '',
     email: '',
     course: '',
+    city: '',
 };
 
 function App() {
@@ -35,8 +36,10 @@ function App() {
     };
 
     useEffect(() => {
-        loadStudents();
-    }, []);
+        if (token) {
+            loadStudents();
+        }
+    }, [token]);
 
     const handleChange = (event) => {
         const { name, value } = event.target;
@@ -57,9 +60,10 @@ function App() {
         event.preventDefault();
         const payload = {
             name: form.name,
-            age: form.age,
+            semester: form.semester,
             email: form.email,
             course: form.course,
+            city: form.city,
         };
 
         try {
@@ -143,84 +147,97 @@ function App() {
 
     return (
         <div className="app-shell">
-            <header className="hero">
-                <div>
-                    <p className="eyebrow">Student Management</p>
-                    <h1>Modern student records</h1>
-                    <p>Manage students through a React frontend backed by a MySQL API.</p>
-                </div>
-                <div>
-                    {token ? (
-                        <div>
-                            <button onClick={handleLogout}>Logout</button>
-                        </div>
-                    ) : (
-                        <div className="auth-inline">
-                            <form onSubmit={handleAuthSubmit} className="auth-form">
+            <main className="welcome-shell">
+                <section className="welcome-card">
+                    <div className="welcome-copy">
+                        <p className="eyebrow">Student Management</p>
+                        <h1>Welcome</h1>
+                        <p>Please sign in or create an account to manage student records.</p>
+                    </div>
+
+                    {!token ? (
+                        <div className="auth-panel">
+                            <div className="card-heading">
+                                <h3>{authMode === 'login' ? 'Sign in' : 'Create account'}</h3>
+                                <p>{authMode === 'login' ? 'Access your student workspace.' : 'Register to get started.'}</p>
+                            </div>
+                            <form onSubmit={handleAuthSubmit} className="form-grid">
                                 <input value={authEmail} onChange={(e) => setAuthEmail(e.target.value)} placeholder="Email" required />
                                 <input value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} placeholder="Password" type="password" required />
                                 <button type="submit">{authMode === 'login' ? 'Login' : 'Register'}</button>
                             </form>
-                            <div className="auth-toggle">
-                                <button onClick={() => setAuthMode(authMode === 'login' ? 'register' : 'login')}>
-                                    Switch to {authMode === 'login' ? 'Register' : 'Login'}
-                                </button>
-                            </div>
+                            <button type="button" className="link-btn alt" onClick={() => setAuthMode(authMode === 'login' ? 'register' : 'login')}>
+                                {authMode === 'login' ? 'Need an account? Register' : 'Already have an account? Login'}
+                            </button>
+                            {authMessage ? <p className="status">{authMessage}</p> : null}
                         </div>
-                    )}
-                </div>
-            </header>
-
-            <main className="content-grid">
-                <section className="card">
-                    <h2>{form.id ? 'Edit student' : 'Add student'}</h2>
-                    <form onSubmit={handleSubmit} className="form-grid">
-                        <input name="name" value={form.name} onChange={handleChange} placeholder="Name" required />
-                        <input name="age" type="number" value={form.age} onChange={handleChange} placeholder="Age" required />
-                        <input name="email" type="email" value={form.email} onChange={handleChange} placeholder="Email" required />
-                        <input name="course" value={form.course} onChange={handleChange} placeholder="Course" required />
-                        <div className="actions">
-                            <button type="submit">{form.id ? 'Save changes' : 'Add student'}</button>
-                            <button type="button" className="secondary" onClick={resetForm}>Clear</button>
-                        </div>
-                    </form>
-                    {message ? <p className="status">{message}</p> : null}
-                    {authMessage ? <p className="status">{authMessage}</p> : null}
-                </section>
-
-                <section className="card">
-                    <div className="table-header">
-                        <h2>Students</h2>
-                        <span>{students.length} records</span>
-                    </div>
-                    {loading ? (
-                        <p>Loading...</p>
                     ) : (
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Age</th>
-                                    <th>Email</th>
-                                    <th>Course</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {students.map((student) => (
-                                    <tr key={student.id}>
-                                        <td>{student.name}</td>
-                                        <td>{student.age}</td>
-                                        <td>{student.email}</td>
-                                        <td>{student.course}</td>
-                                        <td>
-                                            <button className="link-btn" onClick={() => handleEdit(student)}>Edit</button>
-                                            <button className="link-btn danger" onClick={() => handleDelete(student.id)}>Delete</button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                        <div className="workspace-card">
+                            <div className="topbar">
+                                <div>
+                                    <h2>Student workspace</h2>
+                                    <p>Manage student records from here.</p>
+                                </div>
+                                <button onClick={handleLogout} className="secondary">Logout</button>
+                            </div>
+
+                            <section className="card">
+                                <div className="card-heading">
+                                    <h3>{form.id ? 'Edit student' : 'Add student'}</h3>
+                                    <p>Capture the latest details in seconds.</p>
+                                </div>
+                                <form onSubmit={handleSubmit} className="form-grid">
+                                    <input name="name" value={form.name} onChange={handleChange} placeholder="Name" required />
+                                    <input name="semester" value={form.semester} onChange={handleChange} placeholder="Semester" required />
+                                    <input name="email" type="email" value={form.email} onChange={handleChange} placeholder="Email" required />
+                                    <input name="course" value={form.course} onChange={handleChange} placeholder="Course" required />
+                                    <input name="city" value={form.city} onChange={handleChange} placeholder="City" required />
+                                    <div className="actions">
+                                        <button type="submit">{form.id ? 'Save changes' : 'Add student'}</button>
+                                        <button type="button" className="secondary" onClick={resetForm}>Clear</button>
+                                    </div>
+                                </form>
+                                {message ? <p className="status">{message}</p> : null}
+                            </section>
+
+                            <section className="card">
+                                <div className="table-header">
+                                    <h3>Student records</h3>
+                                    <span>{students.length} records</span>
+                                </div>
+                                {loading ? (
+                                    <p>Loading...</p>
+                                ) : (
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Semester</th>
+                                                <th>Email</th>
+                                                <th>Course</th>
+                                                <th>City</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {students.map((student) => (
+                                                <tr key={student.id}>
+                                                    <td>{student.name}</td>
+                                                    <td>{student.semester}</td>
+                                                    <td>{student.email}</td>
+                                                    <td>{student.course}</td>
+                                                    <td>{student.city}</td>
+                                                    <td>
+                                                        <button className="link-btn" onClick={() => handleEdit(student)}>Edit</button>
+                                                        <button className="link-btn danger" onClick={() => handleDelete(student.id)}>Delete</button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                )}
+                            </section>
+                        </div>
                     )}
                 </section>
             </main>
