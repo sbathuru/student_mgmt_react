@@ -14,6 +14,13 @@ function App() {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
 
+    // Auth state
+    const [token, setToken] = useState(localStorage.getItem('token') || '');
+    const [authMode, setAuthMode] = useState('login'); // 'login' or 'register'
+    const [authEmail, setAuthEmail] = useState('');
+    const [authPassword, setAuthPassword] = useState('');
+    const [authMessage, setAuthMessage] = useState('');
+
     const loadStudents = async () => {
         setLoading(true);
         try {
@@ -40,6 +47,12 @@ function App() {
         setForm(emptyForm);
     };
 
+    const authHeaders = () => {
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        return headers;
+    };
+
     const handleSubmit = async (event) => {
         event.preventDefault();
         const payload = {
@@ -53,24 +66,25 @@ function App() {
             const response = form.id
                 ? await fetch(`/api/students/${form.id}`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: authHeaders(),
                     body: JSON.stringify(payload),
                 })
                 : await fetch('/api/students', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: authHeaders(),
                     body: JSON.stringify(payload),
                 });
 
             if (!response.ok) {
-                throw new Error('Request failed');
+                const err = await response.json().catch(() => ({}));
+                throw new Error(err.error || 'Request failed');
             }
 
             setMessage(form.id ? 'Student updated.' : 'Student added.');
             resetForm();
             loadStudents();
         } catch (error) {
-            setMessage('Unable to save student.');
+            setMessage(error.message || 'Unable to save student.');
         }
     };
 
@@ -80,15 +94,51 @@ function App() {
 
     const handleDelete = async (studentId) => {
         try {
-            const response = await fetch(`/api/students/${studentId}`, { method: 'DELETE' });
+            const response = await fetch(`/api/students/${studentId}`, {
+                method: 'DELETE',
+                headers: authHeaders(),
+            });
             if (!response.ok) {
-                throw new Error('Delete failed');
+                const err = await response.json().catch(() => ({}));
+                throw new Error(err.error || 'Delete failed');
             }
             setMessage('Student deleted.');
             loadStudents();
         } catch (error) {
-            setMessage('Unable to delete student.');
+            setMessage(error.message || 'Unable to delete student.');
         }
+    };
+
+    // --- Auth handlers ---
+    const handleAuthSubmit = async (evt) => {
+        evt.preventDefault();
+        setAuthMessage('');
+        try {
+            const res = await fetch(`/api/auth/${authMode}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: authEmail, password: authPassword }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                throw new Error(data.error || 'Auth failed');
+            }
+            if (authMode === 'login') {
+                setToken(data.token);
+                localStorage.setItem('token', data.token);
+                setAuthMessage('Logged in');
+            } else {
+                setAuthMessage('Registered; you can now log in');
+                setAuthMode('login');
+            }
+        } catch (err) {
+            setAuthMessage(err.message || 'Auth error');
+        }
+    };
+
+    const handleLogout = () => {
+        setToken('');
+        localStorage.removeItem('token');
     };
 
     return (
@@ -98,6 +148,26 @@ function App() {
                     <p className="eyebrow">Student Management</p>
                     <h1>Modern student records</h1>
                     <p>Manage students through a React frontend backed by a MySQL API.</p>
+                </div>
+                <div>
+                    {token ? (
+                        <div>
+                            <button onClick={handleLogout}>Logout</button>
+                        </div>
+                    ) : (
+                        <div className="auth-inline">
+                            <form onSubmit={handleAuthSubmit} className="auth-form">
+                                <input value={authEmail} onChange={(e) => setAuthEmail(e.target.value)} placeholder="Email" required />
+                                <input value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} placeholder="Password" type="password" required />
+                                <button type="submit">{authMode === 'login' ? 'Login' : 'Register'}</button>
+                            </form>
+                            <div className="auth-toggle">
+                                <button onClick={() => setAuthMode(authMode === 'login' ? 'register' : 'login')}>
+                                    Switch to {authMode === 'login' ? 'Register' : 'Login'}
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </header>
 
@@ -115,6 +185,7 @@ function App() {
                         </div>
                     </form>
                     {message ? <p className="status">{message}</p> : null}
+                    {authMessage ? <p className="status">{authMessage}</p> : null}
                 </section>
 
                 <section className="card">
