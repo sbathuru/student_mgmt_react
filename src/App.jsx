@@ -21,6 +21,7 @@ function App() {
     const [authEmail, setAuthEmail] = useState('');
     const [authPassword, setAuthPassword] = useState('');
     const [authMessage, setAuthMessage] = useState('');
+    const [userName, setUserName] = useState(localStorage.getItem('userName') || '');
 
     const loadStudents = async () => {
         setLoading(true);
@@ -129,7 +130,10 @@ function App() {
             }
             if (authMode === 'login') {
                 setToken(data.token);
+                const nextUserName = data.user?.email || authEmail;
+                setUserName(nextUserName);
                 localStorage.setItem('token', data.token);
+                localStorage.setItem('userName', nextUserName);
                 setAuthMessage('Logged in');
             } else {
                 setAuthMessage('Registered; you can now log in');
@@ -142,7 +146,9 @@ function App() {
 
     const handleLogout = () => {
         setToken('');
+        setUserName('');
         localStorage.removeItem('token');
+        localStorage.removeItem('userName');
     };
 
     return (
@@ -151,8 +157,8 @@ function App() {
                 <section className="welcome-card">
                     <div className="welcome-copy">
                         <p className="eyebrow">Student Management</p>
-                        <h1>Welcome</h1>
-                        <p>Please sign in or create an account to manage student records.</p>
+                        <h1>{token ? `Welcome, ${userName}` : 'Welcome'}</h1>
+                        <p>{token ? 'You are signed in and ready to manage student records.' : 'Please sign in or create an account to manage student records.'}</p>
                     </div>
 
                     {!token ? (
